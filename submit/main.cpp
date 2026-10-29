@@ -41,10 +41,9 @@ private:
     int m; // B-Tree의 차수
     bool searchPath(BTreeNode*& node, int key, int& idx) // 스택대신 idx씀 재귀기 때문에
     {
-        while (idx >= 0 && key <= node->keys[idx]) {
-            if (key == node->keys[idx]) {
-                return false;
-            }
+        for (int j = 0; j < node->size; j++)
+            if (node->keys[j] == key) return false;
+        while (idx >= 0 && key < node->keys[idx]) {
             node->keys[idx + 1] = node->keys[idx];
             idx--;
         }
@@ -78,17 +77,13 @@ private:
             while (i >= 0 && key < node->keys[i]) {
                 i--;
             }
-            if (key == node->keys[i]) {
+            if (i >= 0 && key == node->keys[i]) {
                 success = false; // 중복 키 발견 시
                 return;
             }
             i++;
             if (node->children[i]->size == m - 1 && node->children[i]->isLeaf) {
                 // 자식이 꽉 찼을 경우
-                if (key == node->keys[i]) {
-                    success = false; // 중복 키 발견 시
-                    return;
-                }
                  
                 insertKey(node->children[i], key, success);
                 if (!success) return;
@@ -188,7 +183,7 @@ private:
             node->keys[idx] = succKey;
             deleteKey(node->children[idx + 1], succKey, retribute, success);
         }
-        else if (node->children[idx]->size >= 1 || !node->children[idx]->isLeaf) {
+        else if (node->children[idx]->size > 1 || !node->children[idx]->isLeaf) {
             BTreeNode* pred = node->children[idx];
             while (!pred->isLeaf) {
                 pred = pred->children[pred->size];
