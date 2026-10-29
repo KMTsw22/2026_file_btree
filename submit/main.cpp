@@ -183,17 +183,8 @@ private:
             node->keys[idx] = succKey;
             deleteKey(node->children[idx + 1], succKey, retribute, success);
         }
-        else if (node->children[idx]->size > 1 || !node->children[idx]->isLeaf) {
-            BTreeNode* pred = node->children[idx];
-            while (!pred->isLeaf) {
-                pred = pred->children[pred->size];
-            }
-            int predKey = pred->keys[pred->size - 1];
-            node->keys[idx] = predKey;
-            deleteKey(node->children[idx], predKey, retribute, success);
-        }
         else {
-            // 양쪽 자식 모두 최소 -> successor로 교체 후, successor 리프를 재분배(오른쪽 형제에서 빌림) 또는 병합
+            // successor 리프가 최소 -> successor로 교체 후, 키가 더 많은 형제에서 빌리거나 병합
             int succKey = node->children[idx + 1]->keys[0];
             node->keys[idx] = succKey;
             if (redistributeKeys(node, idx + 1)) {
