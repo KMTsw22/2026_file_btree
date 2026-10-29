@@ -176,7 +176,7 @@ private:
             idx++;
         }
     }
-    void bestSibling(BTreeNode*& node, int key, int idx, bool& retribute, bool& success)
+    void bestSibling(BTreeNode*& node, int idx, bool& retribute, bool& success)
     {
         if (node->children[idx + 1]->size > 1 || !node->children[idx + 1]->isLeaf) {
             int succKey = getSuccessor(node->children[idx + 1]);
@@ -193,8 +193,15 @@ private:
             deleteKey(node->children[idx], predKey, retribute, success);
         }
         else {
-            mergeNode(node, idx);
-            deleteKey(node->children[idx], key, retribute, success);
+            // 양쪽 자식 모두 최소 -> successor로 교체 후, successor 리프를 재분배(오른쪽 형제에서 빌림) 또는 병합
+            int succKey = node->children[idx + 1]->keys[0];
+            node->keys[idx] = succKey;
+            if (redistributeKeys(node, idx + 1)) {
+                deleteKey(node->children[idx], succKey, retribute, success);
+            }
+            else {
+                deleteKey(node->children[idx + 1], succKey, retribute, success);
+            }
         }
     }
     
@@ -209,7 +216,7 @@ private:
                 node->size--;
             }
             else {
-                bestSibling(node, key, idx, retribute, success);
+                bestSibling(node, idx, retribute, success);
             }
         }
         else {
@@ -350,7 +357,7 @@ private:
     }
 
 public:
-    BTree(int _m) : m(_m), root(nullptr) {}
+    BTree(int _m) : root(nullptr), m(_m) {}
 
     bool insertBT(int key) {
         bool success = true;
